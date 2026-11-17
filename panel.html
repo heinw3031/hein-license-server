@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HEIN — License Control Deck</title>
+<style>
+  :root{--acc1:#22e58a;--acc2:#17b8d4;--bg:#070b14;--card:#0c1322;--line:#1b2740;--mut:#7d8aa5;--txt:#e6f5ee}
+  body.alt{--acc1:#f59e0b;--acc2:#f43f5e}
+  *{box-sizing:border-box;font-family:system-ui,sans-serif}
+  body{background:var(--bg);color:var(--txt);margin:0;padding:16px;max-width:520px;margin:0 auto}
+  .head{display:flex;align-items:center;gap:10px;margin:8px 0 16px}
+  .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--acc1),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:900;color:#04120a}
+  .live{border:1px solid #14532d;background:#0a2016;color:#4ade80;font-size:10px;font-weight:800;padding:5px 10px;border-radius:20px}
+  .stats{display:flex;gap:8px;margin-bottom:12px}
+  .stat{flex:1;background:var(--card);border-radius:12px;padding:12px 10px}
+  .stat b{font-size:23px;display:block}
+  .stat span{font-size:9px;color:var(--mut);letter-spacing:1.5px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+  label{font-size:9.5px;color:var(--mut);letter-spacing:2px;display:block;margin:10px 0 5px}
+  input,select{width:100%;background:#05080f;border:1px solid var(--line);border-radius:11px;padding:12px;color:var(--txt);font-size:14px;text-align:center}
+  .seg{display:flex;background:#05080f;border:1px solid var(--line);border-radius:11px;padding:4px}
+  .seg button{flex:1;background:none;border:none;color:#aeb9cf;font-weight:700;padding:9px;border-radius:8px;cursor:pointer;font-size:12px}
+  .seg button.on{background:linear-gradient(90deg,var(--acc1),var(--acc2));color:#04120a}
+  .row{display:flex;gap:8px;align-items:center}
+  .pm{width:46px;background:#101828;border:1px solid var(--line);border-radius:11px;padding:11px;color:var(--acc1);font-size:16px;font-weight:800;cursor:pointer}
+  .big{width:100%;background:linear-gradient(90deg,var(--acc1),var(--acc2));color:#04120a;border:none;font-size:15px;font-weight:900;letter-spacing:1px;padding:14px;border-radius:12px;cursor:pointer;margin-top:14px}
+  .key{border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:8px;background:#05080f}
+  .key b{word-break:break-all}
+  .key small{color:var(--mut);display:block;margin-top:3px}
+  .del{background:none;border:1px solid #7f2d3a;color:#fb7185;border-radius:9px;padding:6px 10px;cursor:pointer;font-weight:700;float:right}
+  .nav{display:flex;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px;margin-top:4px}
+  .nav button{flex:1;background:none;border:none;color:var(--mut);font-size:10px;font-weight:700;padding:8px;cursor:pointer;border-radius:9px}
+  .nav button.on{color:var(--acc1);background:#0a2016}
+  .err{color:#fb7185;font-size:13px;min-height:18px;text-align:center}
+  .ok{color:#4ade80;font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<div class="head">
+  <div class="logo">H</div>
+  <div style="flex:1"><div style="font-weight:800;letter-spacing:1.5px;font-size:16px">HEIN</div>
+  <div style="font-size:9.5px;color:var(--mut);letter-spacing:2.5px">LICENSE CONTROL DECK</div></div>
+  <div class="live">&#9679; LIVE</div>
+</div>
+
+<div id="loginBox" class="card">
+  <div style="font-size:16px;font-weight:800">Admin Login</div>
+  <label>ADMIN PASSWORD</label>
+  <input id="adminPw" type="password" placeholder="Enter admin password">
+  <button class="big" onclick="adminLogin()">LOGIN</button>
+  <div class="err" id="loginErr"></div>
+</div>
+
+<div id="mainBox" style="display:none">
+  <div class="stats">
+    <div class="stat" style="border-left:3px solid var(--acc1)"><b style="color:var(--acc1)" id="stKeys">0</b><span>TOTAL KEYS</span></div>
+    <div class="stat" style="border-left:3px solid #38bdf8"><b style="color:#38bdf8" id="stOnline">0</b><span>ONLINE</span></div>
+    <div class="stat" style="border-left:3px solid #fb4d6d"><b style="color:#fb7185" id="stDev">0</b><span>DEVICES</span></div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:16px;font-weight:800">Create New Key</div>
+    <div style="font-size:11.5px;color:var(--mut)">Generate a fresh license in seconds</div>
+    <label>PASSWORD (KEY) — blank = auto HEIN-xxxxxx</label>
+    <input id="keyText" type="text" placeholder="Enter key password">
+    <label>TIME TYPE</label>
+    <div class="seg">
+      <button id="uDays" class="on" onclick="setUnit('days')">DAYS</button>
+      <button id="uHours" onclick="setUnit('hours')">HOURS</button>
+      <button id="uMinutes" onclick="setUnit('minutes')">MINUTES</button>
+    </div>
+    <label>AMOUNT</label>
+    <div class="row">
+      <button class="pm" onclick="bump(-1)">&minus;</button>
+      <input id="amount" type="number" value="30">
+      <button class="pm" onclick="bump(1)">+</button>
+    </div>
+    <label>MAX DEVICES</label>
+    <input id="maxDev" type="number" value="1" min="1">
+    <button class="big" onclick="createKey()">+ CREATE KEY</button>
+    <div class="ok" id="createMsg"></div>
+    <div class="err" id="createErr"></div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:16px;font-weight:800;margin-bottom:10px">Keys</div>
+    <div id="keyList"></div>
+  </div>
+
+  <div class="nav">
+    <button class="on">HOME</button>
+    <button onclick="refreshAll()">KEYS</button>
+    <button onclick="document.body.classList.toggle('alt')">THEME</button>
+    <button style="color:#fb7185" onclick="logout()">EXIT</button>
+  </div>
+</div>
+
+<script>
+let unit='days';
+function tok(){return localStorage.getItem('hein_admin_token')||''}
+function H(){return {'Authorization':'Bearer '+tok(),'Content-Type':'application/json'}}
+function setUnit(u){unit=u;for(const x of ['Days','Hours','Minutes'])document.getElementById('u'+x).classList.remove('on');document.getElementById('u'+u[0].toUpperCase()+u.slice(1)).classList.add('on')}
+function bump(d){const a=document.getElementById('amount');a.value=Math.max(1,(parseInt(a.value)||0)+d)}
+async function adminLogin(){
+  const pw=document.getElementById('adminPw').value;
+  const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+  const j=await r.json();
+  if(j.ok){localStorage.setItem('hein_admin_token',j.token);showMain();refreshAll()}
+  else document.getElementById('loginErr').textContent='Wrong password';
+}
+function logout(){localStorage.removeItem('hein_admin_token');location.reload()}
+function showMain(){document.getElementById('loginBox').style.display='none';document.getElementById('mainBox').style.display='block'}
+async function refreshAll(){
+  const s=await (await fetch('/api/admin/stats',{headers:H()})).json();
+  if(!s.ok){logout();return}
+  document.getElementById('stKeys').textContent=s.total_keys;
+  document.getElementById('stOnline').textContent=s.online;
+  document.getElementById('stDev').textContent=s.devices;
+  const k=await (await fetch('/api/admin/keys',{headers:H()})).json();
+  const el=document.getElementById('keyList');el.innerHTML='';
+  if(!k.keys.length)el.innerHTML='<small style="color:var(--mut)">No keys yet</small>';
+  for(const rec of k.keys){
+    const div=document.createElement('div');div.className='key';
+    const exp=new Date(rec.expires*1000).toLocaleString();
+    div.innerHTML='<button class="del" onclick="delKey(\''+rec.key.replace(/'/g,"")+'\')">DELETE</button><b>'+rec.key+'</b><small>Expires: '+exp+(rec.expired?' (EXPIRED)':'')+' &bull; Devices: '+rec.devices.length+'/'+rec.max_devices+' &bull; Online: '+rec.online+'</small>';
+    el.appendChild(div);
+  }
+}
+async function createKey(){
+  const body={key:document.getElementById('keyText').value,amount:parseFloat(document.getElementById('amount').value)||30,unit:unit,max_devices:parseInt(document.getElementById('maxDev').value)||1};
+  const r=await fetch('/api/admin/keys',{method:'POST',headers:H(),body:JSON.stringify(body)});
+  const j=await r.json();
+  if(j.ok){document.getElementById('createMsg').textContent='Created: '+j.record.key;document.getElementById('createErr').textContent='';refreshAll()}
+  else{document.getElementById('createErr').textContent=j.error||'Failed';document.getElementById('createMsg').textContent=''}
+}
+async function delKey(k){
+  await fetch('/api/admin/keys/delete',{method:'POST',headers:H(),body:JSON.stringify({key:k})});
+  refreshAll();
+}
+if(tok()){showMain();refreshAll()}
+setInterval(()=>{if(tok())refreshAll()},15000);
+</script>
+</body>
+</html>
